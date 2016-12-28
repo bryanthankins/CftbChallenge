@@ -49,8 +49,8 @@ var introState = {
 
 
 	preload: function() {
-		 game.load.spritesheet('mollytalking', 'mollyface2.png', 128, 128);
-		 game.load.spritesheet('playersquating', 'squat.png', 164, 164);
+		 game.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
+		 game.load.spritesheet('playersquating', 'Squat.png', 164, 164);
 
 	},
 
@@ -161,8 +161,8 @@ var level1TrainingState = {
 var level1State = {
 
 	preload: function() {
-		 game.load.spritesheet('mollytalking', 'mollyface2.png', 128, 128);
-		 game.load.spritesheet('playersquating', 'squat.png', 164, 164);
+		 game.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
+		 game.load.spritesheet('playersquating', 'Squat.png', 164, 164);
 	},
 
 	create: function() {
