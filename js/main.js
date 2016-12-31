@@ -1,5 +1,8 @@
+var CftbChallenge = {};
 
-var loaderState = {
+CftbChallenge.loaderState = function (game) {};
+
+CftbChallenge.loaderState.prototype = {
 
 	init: function() {
         this.input.maxPointers = 1;
@@ -22,7 +25,9 @@ var loaderState = {
 
 
 
-var menuState = {
+CftbChallenge.menuState = function (game) {};
+
+CftbChallenge.menuState.prototype = {
 
 	create: function() {
         var cftbText = this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'CROSSFIT THUNDERBOLT', 64);
@@ -45,23 +50,27 @@ var menuState = {
 
 };
 
-var introState = {
+CftbChallenge.introState = function (game) {
+	this.mollySprite;
+};
+
+CftbChallenge.introState.prototype = {
 
 
 	preload: function() {
-		 game.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
-		 game.load.spritesheet('playersquating', 'Squat.png', 164, 164);
+		 this.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
+		 this.load.spritesheet('playersquating', 'Squat.png', 164, 164);
 
 	},
 
 	create: function() {
 		// draw a rectangle
 		var graphics = helper.drawRectangle();
-		_mollySprite = helper.createMollySprite();
+		this.mollySprite = helper.createMollySprite();
 
-		helper.writeTextWithPromise(null, "Welcome to CrossFit Thunderbolt! I'm coach Molly! Are you ready for the CFTB Challenge? [Click]", _mollySprite)
+		helper.writeTextWithPromise(null, "Welcome to CrossFit Thunderbolt! I'm coach Molly! Are you ready for the CFTB Challenge? [Click]", this.mollySprite).bind(this)
 		  .then(function(prevResults){
-			        game.state.start('level1Training');
+			        this.state.start('level1Training');
 			  	});
 	},
 };
@@ -92,7 +101,7 @@ var helper = {
 
 
 	writeTextWithPromise: function(prevTypewriter, textToWrite, mollySprite) {
-		return new RSVP.Promise(function(fulfill, reject) {
+		return new Promise(function(fulfill, reject) {
 			if(prevTypewriter) {
 				prevTypewriter.destroy();
 			}
@@ -127,25 +136,26 @@ var helper = {
 
 };
 
-var level1TrainingState = {
+CftbChallenge.level1TrainingState = function (game) {};
+
+CftbChallenge.level1TrainingState.prototype = {
 
 
 	preload: function() {
-		 game.load.spritesheet('mollytalking', 'mollyface2.png', 128, 128);
-		 game.load.spritesheet('playersquating', 'squat.png', 164, 164);
+		 this.load.spritesheet('mollytalking', 'mollyface2.png', 128, 128);
+		 this.load.spritesheet('playersquating', 'squat.png', 164, 164);
 	},
 
 	create: function() {
 		var graphics = helper.drawRectangle();
-		_mollySprite = helper.createMollySprite();
-		_playerSquating = helper.createPlayerSquatSprite(250, 250);
-		_learnText = "";
-	 	helper.writeTextWithPromise(null, "Let's learn air squats [Click] to try one!", _mollySprite)
+		this.mollySprite = helper.createMollySprite();
+		this.playerSquating = helper.createPlayerSquatSprite(250, 250);
+	 	helper.writeTextWithPromise(null, "Let's learn air squats [Click] to try one!", this.mollySprite).bind(this)
 	 		.then(function(prevResults){
-			    _playerSquating.animations.play('squat');
-			 	helper.writeTextWithPromise(prevResults, "Great job! Be sure to squat below parallel each time! [click]", _mollySprite)
+			    this.playerSquating.animations.play('squat');
+			 	helper.writeTextWithPromise(prevResults, "Great job! Be sure to squat below parallel each time! [click]", this.mollySprite).bind(this)
 			    .then(function(prevResults){
-				        game.state.start('level1');
+				        this.state.start('level1');
 				  	});
 	 		});
 
@@ -158,61 +168,60 @@ var level1TrainingState = {
 
 };
 
-var level1State = {
+CftbChallenge.level1State = function (game) {
+	this.mollySprite;
+	this.playersquating;
+	this.youCanDoItText;
+};
+
+CftbChallenge.level1State.prototype = {
 
 	preload: function() {
-		 game.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
-		 game.load.spritesheet('playersquating', 'Squat.png', 164, 164);
+		 this.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
+		 this.load.spritesheet('playersquating', 'Squat.png', 164, 164);
 	},
 
 	create: function() {
 		var graphics = helper.drawRectangle();
-		_mollySprite = helper.createMollySprite();
-		_playerSquating = helper.createPlayerSquatSprite(75, 250);
+		this.mollySprite = helper.createMollySprite();
+		this.playerSquating = helper.createPlayerSquatSprite(75, 250);
 
-
-
-		_youCanDoItText = "";
 		_alreadyRun = false;
-	 	helper.writeTextWithPromise(null, "Now that you know air squats let's try them in a workout! [click]", _mollySprite)
+	 	helper.writeTextWithPromise(null, "Now that you know air squats let's try them in a workout! [click]", this.mollySprite).bind(this)
 		  .then(function(prevResults){
-				 	return helper.writeTextWithPromise(prevResults, "Can you beat Andrea in 30 air squats? 3 2 1 GO! [click to start]", _mollySprite)
+				 	return helper.writeTextWithPromise(prevResults, "Can you beat Andrea in 30 air squats? 3 2 1 GO! [click to start]", this.mollySprite).bind(this)
 			  	})
 		  .then(function(prevResults){
 		  			prevResults.destroy();
-					_playerSquating.events.onInputDown.add(this.level1State.squat, this);
-					_playerSquating.count = 30;
+					this.playerSquating.events.onInputDown.add(CftbChallenge.level1State.prototype.squat, this);
+					this.playerSquating.count = 30;
 			        scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Player Squats: 30', 32);
 			        scoreText.smoothed = false;
-				 	_youCanDoItText = helper.writeTextWithPromise(prevResults, "You can do it!", _mollySprite)
+				 	this.youCanDoItText = helper.writeTextWithPromise(prevResults, "You can do it!", this.mollySprite).bind(this)
 			  	});
 
 
 	},
 	squat: function() {
-	    _playerSquating.animations.play('squat');
-	    _playerSquating.count--; 
-	    scoreText.text = "Player Squats: " + _playerSquating.count;
+	    this.playerSquating.animations.play('squat');
+	    this.playerSquating.count--; 
+	    scoreText.text = "Player Squats: " + this.playerSquating.count;
 	},
 
 	update: function() {
-		if(_playerSquating.count <= 0 && !_alreadyRun){
+		if(this.playerSquating.count <= 0 && !_alreadyRun){
 			_alreadyRun = true;
-			_playerSquating.events.onInputDown.removeAll();
-		 	helper.writeTextWithPromise(_youCanDoItText._result, "You won!", _mollySprite)
+			this.playerSquating.events.onInputDown.removeAll();
+		 	helper.writeTextWithPromise(_youCanDoItText._result, "You won!", this.mollySprite).bind(this)
 		}
 	}
-
-
-
-
 
 };
 
 var game = new Phaser.Game(640, 480, Phaser.CANVAS, 'gameDiv');
-game.state.add('loader', loaderState);
-game.state.add('menu', menuState);
-game.state.add('intro', introState);
-game.state.add('level1Training', level1TrainingState);
-game.state.add('level1', level1State);
+game.state.add('loader', CftbChallenge.loaderState);
+game.state.add('menu', CftbChallenge.menuState);
+game.state.add('intro', CftbChallenge.introState);
+game.state.add('level1Training', CftbChallenge.level1TrainingState);
+game.state.add('level1', CftbChallenge.level1State);
 game.state.start('loader');
