@@ -13,11 +13,13 @@ CftbChallenge.loaderState.prototype = {
 	preload: function() {
 	  this.load.path = 'assets/';
 	  this.load.bitmapFont('fat-and-tiny');
+      this.load.audio('goingdown', 'going_down_tune.mp3');
+      this.load.audio('notmyship', 'not_my_ship.mp3');
 	},
 
 	create: function() {
 		this.stage.backgroundColor = 0x100438;
-        this.state.start('intro');
+        this.state.start('menu');
 	},
 
 
@@ -25,9 +27,15 @@ CftbChallenge.loaderState.prototype = {
 
 
 
-CftbChallenge.menuState = function (game) {};
+CftbChallenge.menuState = function (game) {
+	this.music;
+};
 
 CftbChallenge.menuState.prototype = {
+
+	preload: function(){
+		this.load.image('cftbLogo','CFTBPixelLogo.png');
+	},
 
 	create: function() {
         var cftbText = this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'CROSSFIT THUNDERBOLT', 64);
@@ -38,8 +46,20 @@ CftbChallenge.menuState.prototype = {
 
         var startText = this.add.bitmapText(this.world.centerX, 230, 'fat-and-tiny', 'Click to Play', 64);
         startText.anchor.x = 0.5;
+    	this.add.tween(startText).to({y: 280},1000).easing(Phaser.Easing.Bounce.Out).start();
+		this.add.tween(startText).to({angle: -2}, 500).to({angle: 2}, 1000).to({angle: 0}, 500).loop().start();
+
+		var cftbLogo = game.add.sprite(300, 220, 'cftbLogo');
+		cftbLogo.anchor.setTo(0.5);
+		cftbLogo.smoothed = false;
+		cftbLogo.scale.setTo(1.5, 1.5);
+
+
+
 
 		this.input.onDown.addOnce(this.start, this);
+        this.music = this.add.audio('notmyship');
+        this.music.play();
 	},
 
     start: function () {
@@ -53,6 +73,7 @@ CftbChallenge.menuState.prototype = {
 CftbChallenge.introState = function (game) {
 	this.mollySprite;
 	this.mollyText;
+	this.talkingAudio;
 };
 
 CftbChallenge.introState.prototype = {
@@ -68,6 +89,7 @@ CftbChallenge.introState.prototype = {
 		// draw a rectangle
 		var graphics = helper.drawRectangle();
 		this.mollySprite = helper.createMollySprite();
+		//this.talkingAudio = this.add.audio('talking1');
 
 		helper.writeMollyText("Welcome to CrossFit Thunderbolt! I'm coach Molly! Are you ready for the CFTB Challenge? [Click]",this).bind(this)
 		  .then(function(prevResults){
@@ -79,7 +101,7 @@ CftbChallenge.introState.prototype = {
 var helper = {
 	drawRectangle: function() {
 		var graphics = game.add.graphics(10, 10);
-	    graphics.lineStyle(6, 0x0000FF, 1);
+	    graphics.lineStyle(6, 0xffffff, 1);
 	    graphics.drawRect(10, 20, 600, 175);
 	    return graphics;
 
@@ -114,6 +136,7 @@ var helper = {
 			    y: 40,
 			    time: 80,
 			    fontFamily: "fat-and-tiny",
+			    //sound: gameState.talkingAudio,
 			    fontSize: 36,
 			    maxWidth: 400,
 			    endFn: function() {
@@ -127,35 +150,6 @@ var helper = {
 			    text: textToWrite 
 			  });
 			  gameState.mollyText.start();
-		});
-	},
-
-	writeTextWithPromise: function(prevTypewriter, textToWrite, mollySprite) {
-		return new Promise(function(fulfill, reject) {
-			if(prevTypewriter) {
-				prevTypewriter.destroy();
-			}
-		    mollySprite.animations.play('talk');
-
-		    var typewriter = new Typewriter();
-		    typewriter.init(game, {
-			    x: 190,
-			    y: 40,
-			    time: 80,
-			    fontFamily: "fat-and-tiny",
-			    fontSize: 36,
-			    maxWidth: 400,
-			    endFn: function() {
-			        mollySprite.animations.stop();
-			        mollySprite.animations.frame = game.rnd.integerInRange(0, 6);
-					game.input.onDown.addOnce(clicked, this);
-					function clicked() {
-					    fulfill(typewriter);
-					}
-			    },
-			    text: textToWrite 
-			  });
-			  typewriter.start();
 		});
 	},
 
@@ -198,9 +192,11 @@ CftbChallenge.level1State = function (game) {
 	this.playersquating;
 	this.youCanDoItText;
 	this.alreadyRun = false;
+	this.alreadySaidMessage = false;
 	this.timer;
 	this.timerEvent;
 	this.WODTimer;
+	this.gameMusic;
 
 };
 
@@ -209,6 +205,7 @@ CftbChallenge.level1State.prototype = {
 	preload: function() {
 		 this.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
 		 this.load.spritesheet('playersquating', 'Squat.png', 164, 164);
+
 	},
 
 	create: function() {
@@ -216,19 +213,22 @@ CftbChallenge.level1State.prototype = {
 		this.mollySprite = helper.createMollySprite();
 		this.playerSquating = helper.createPlayerSquatSprite(304,340);
         this.timer = this.time.create();
+        //this.gameMusic = this.add.audio('goingdown');
 
 	 	helper.writeMollyText("Now that you know air squats let's try them in a workout! [click]", this).bind(this)
 		  .then(function(prevResults){
 				 	return helper.writeMollyText("Can you do 30 air squats in 30 seconds? 3 2 1 GO! [click to start]", this).bind(this)
 			  	})
 		  .then(function(prevResults){
+				    //this.sound.stopAll()
+				    //this.gameMusic.play();
 		  			prevResults.destroy();
 					this.playerSquating.events.onInputDown.add(CftbChallenge.level1State.prototype.squat, this);
 					this.playerSquating.count = 30;
 			        this.scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Player Squats: 30', 32);
 			        this.WODTimer = game.add.bitmapText(420, 205, 'fat-and-tiny', 'WOD Timer: 30', 32);
 			        this.scoreText.smoothed = false;
-				 	this.youCanDoItText = helper.writeMollyText("You can do it!", this).bind(this);
+				 	this.youCanDoItText = helper.writeMollyText("Let me turn up the music! You can do it!", this).bind(this);
 
 			        this.timerEvent = this.timer.add(Phaser.Timer.SECOND * 30, this.endTimer, this);
 			        this.timer.start();
@@ -246,15 +246,17 @@ CftbChallenge.level1State.prototype = {
 		if(this.playerSquating.count <= 0 && !this.alreadyRun){
 			this.alreadyRun = true;
 			this.playerSquating.events.onInputDown.removeAll();
-		 	this.youCanDoItText = helper.writeMollyText("You won!", this).bind(this)
+		 	this.youCanDoItText = helper.writeMollyText("You did it!", this).bind(this)
 		 	this.timer.stop();
+		 	//this.gameMusic.stop();
 		}
 	},
     render: function () {
         if (this.timer.running) {
             this.WODTimer.text = "WOD Timer: " + this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000));
             var timerInSeconds = Math.round((this.timerEvent.delay - this.timer.ms) / 1000);
-            if(timerInSeconds == 15) {
+            if(timerInSeconds == 15 && !this.alreadySaidMessage) {
+            	this.alreadySaidMessage = true;
             	helper.writeMollyText("15 seconds left!", this);
             }
 
@@ -263,9 +265,14 @@ CftbChallenge.level1State.prototype = {
     endTimer: function() {
         this.timer.stop();
         if(this.playerSquating.count > 0){
-		 	this.youCanDoItText = helper.writeMollyText("You lost!", this).bind(this);
+		 	this.youCanDoItText = helper.writeMollyText("Try again tomorrow!", this).bind(this);
+		 	//this.gameMusic.stop();
+		 	  game.time.events.add(Phaser.Timer.SECOND * 3, this.gameOver, this)
 
         }
+    },
+    gameOver: function() {
+        this.state.start('menu');
     },
     formatTime: function(s) {
         var minutes = "0" + Math.floor(s / 60);
