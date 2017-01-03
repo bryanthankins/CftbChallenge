@@ -19,7 +19,55 @@ CftbChallenge.loaderState.prototype = {
 
 	create: function() {
 		this.stage.backgroundColor = 0x100438;
+		//this.stage.backgroundColor = 0xffffff;
         this.state.start('menu');
+	},
+
+
+};
+
+CftbChallenge.choosePlayerState = function (game) {
+};
+
+CftbChallenge.choosePlayerState.prototype = {
+
+	init: function() {
+	},
+
+	preload: function() {
+		this.load.image('player1','PLAYER1.png');
+		this.load.image('player2','PLAYER2.png');
+		this.load.image('player3','PLAYER3.png');
+	},
+
+	create: function() {
+        var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Player!', 64);
+        chooseText.anchor.x = 0.5;
+
+        var playerFace1 = this.add.sprite(this.world.centerX - 210, this.world.centerY - 20, 'player1');
+        playerFace1.anchor.x = 0.5;
+        playerFace1.inputEnabled = true;
+        playerFace1.events.onInputDown.add(this.pickPlayer1, this);
+        var playerFace2 = this.add.sprite(this.world.centerX, this.world.centerY - 20, 'player2');
+        playerFace2.anchor.x = 0.5;
+        playerFace2.inputEnabled = true;
+        playerFace2.events.onInputDown.add(this.pickPlayer2, this);
+        var playerFace3 = this.add.sprite(this.world.centerX + 190, this.world.centerY - 20, 'player3');
+        playerFace3.anchor.x = 0.5;
+        playerFace3.inputEnabled = true;
+        playerFace3.events.onInputDown.add(this.pickPlayer3, this);
+	},
+	pickPlayer1: function() {
+		this.state.start('level1',true, false, 'PLAYER1');
+
+	},
+	pickPlayer2: function() {
+		this.state.start('level1',true, false, 'PLAYER2');
+
+	},
+	pickPlayer3: function() {
+		this.state.start('level1',true, false, 'PLAYER3');
+
 	},
 
 
@@ -33,6 +81,7 @@ CftbChallenge.menuState = function (game) {
 
 CftbChallenge.menuState.prototype = {
 
+
 	preload: function(){
 		this.load.image('cftbLogo','CFTBPixelLogo.png');
 	},
@@ -44,10 +93,15 @@ CftbChallenge.menuState.prototype = {
         var challengeText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Challenge!', 64);
         challengeText.anchor.x = 0.5;
 
-        var startText = this.add.bitmapText(this.world.centerX, 230, 'fat-and-tiny', 'Click to Play', 64);
+        var startText = this.add.bitmapText(this.world.centerX, 230, 'fat-and-tiny', 'Play', 64);
         startText.anchor.x = 0.5;
-    	this.add.tween(startText).to({y: 280},1000).easing(Phaser.Easing.Bounce.Out).start();
+    	this.add.tween(startText).to({y: 285},1000).easing(Phaser.Easing.Bounce.Out).start();
 		this.add.tween(startText).to({angle: -2}, 500).to({angle: 2}, 1000).to({angle: 0}, 500).loop().start();
+
+        var tutText = this.add.bitmapText(this.world.centerX, 230 + 50, 'fat-and-tiny', 'Tutorial', 64);
+        tutText.anchor.x = 0.5;
+    	this.add.tween(tutText).to({y: 340},1000).easing(Phaser.Easing.Bounce.Out).start();
+		this.add.tween(tutText).to({angle: 2}, 500).to({angle: -2}, 1000).to({angle: 0}, 500).loop().start();
 
 		var cftbLogo = game.add.sprite(300, 220, 'cftbLogo');
 		cftbLogo.anchor.setTo(0.5);
@@ -55,15 +109,23 @@ CftbChallenge.menuState.prototype = {
 		cftbLogo.scale.setTo(1.5, 1.5);
 
 
+        var bestText = this.add.bitmapText(this.world.centerX, 400, 'fat-and-tiny', 'Best Lift: 0 lbs', 64);
+        bestText.anchor.x = 0.5;
 
 
-		this.input.onDown.addOnce(this.start, this);
+		startText.inputEnabled = true;
+		startText.events.onInputDown.add(this.startGame, this);
+		tutText.inputEnabled = true;
+		tutText.events.onInputDown.add(this.startTut, this);
         this.music = this.add.audio('notmyship');
-        this.music.play();
+        //this.music.play(); TODO: add back
 	},
 
-    start: function () {
+    startGame: function () { 
+        this.state.start('choosePlayer');
 
+    },
+    startTut: function () { 
         this.state.start('intro');
 
     }
@@ -134,7 +196,7 @@ var helper = {
 		    gameState.mollyText.init(game, {
 			    x: 190,
 			    y: 40,
-			    time: 80,
+			    time: 65,
 			    fontFamily: "fat-and-tiny",
 			    //sound: gameState.talkingAudio,
 			    fontSize: 36,
@@ -197,14 +259,20 @@ CftbChallenge.level1State = function (game) {
 	this.timerEvent;
 	this.WODTimer;
 	this.gameMusic;
+	this.playerPic;
 
 };
 
 CftbChallenge.level1State.prototype = {
 
+	init: function(params) {
+		this.playerPic = params;
+	},
+
 	preload: function() {
 		 this.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
 		 this.load.spritesheet('playersquating', 'Squat.png', 164, 164);
+		 this.load.image('playerPic', this.playerPic + '.png');
 
 	},
 
@@ -212,21 +280,25 @@ CftbChallenge.level1State.prototype = {
 		var graphics = helper.drawRectangle();
 		this.mollySprite = helper.createMollySprite();
 		this.playerSquating = helper.createPlayerSquatSprite(304,340);
+		this.playerSprite = this.add.image(4, 410, 'playerPic');
+		this.playerSprite.scale.setTo(0.5,0.5);
+        this.playerName = game.add.bitmapText(74, 430, 'fat-and-tiny', this.playerPic, 44);
         this.timer = this.time.create();
-        //this.gameMusic = this.add.audio('goingdown');
 
-	 	helper.writeMollyText("Now that you know air squats let's try them in a workout! [click]", this).bind(this)
+	 	helper.writeMollyText("Lets start with 95 pounds [click]", this).bind(this)
 		  .then(function(prevResults){
-				 	return helper.writeMollyText("Can you do 30 air squats in 30 seconds? 3 2 1 GO! [click to start]", this).bind(this)
+				 	return helper.writeMollyText("I want to see perfect form 3 2 1 GO! [click to start]", this).bind(this)
 			  	})
 		  .then(function(prevResults){
+
 				    //this.sound.stopAll()
 				    //this.gameMusic.play();
 		  			prevResults.destroy();
 					this.playerSquating.events.onInputDown.add(CftbChallenge.level1State.prototype.squat, this);
 					this.playerSquating.count = 30;
-			        this.scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Player Squats: 30', 32);
-			        this.WODTimer = game.add.bitmapText(420, 205, 'fat-and-tiny', 'WOD Timer: 30', 32);
+			        this.scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Attempt: 95', 32);
+			        this.bestText = game.add.bitmapText(16, 235, 'fat-and-tiny', 'PR: 95', 32);
+			        this.WODTimer = game.add.bitmapText(420, 205, 'fat-and-tiny', 'Lift Timer: 0', 32);
 			        this.scoreText.smoothed = false;
 				 	this.youCanDoItText = helper.writeMollyText("Let me turn up the music! You can do it!", this).bind(this);
 
@@ -248,12 +320,11 @@ CftbChallenge.level1State.prototype = {
 			this.playerSquating.events.onInputDown.removeAll();
 		 	this.youCanDoItText = helper.writeMollyText("You did it!", this).bind(this)
 		 	this.timer.stop();
-		 	//this.gameMusic.stop();
 		}
 	},
     render: function () {
         if (this.timer.running) {
-            this.WODTimer.text = "WOD Timer: " + this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000));
+            this.WODTimer.text = "Lift Timer: " + this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000));
             var timerInSeconds = Math.round((this.timerEvent.delay - this.timer.ms) / 1000);
             if(timerInSeconds == 15 && !this.alreadySaidMessage) {
             	this.alreadySaidMessage = true;
@@ -266,7 +337,6 @@ CftbChallenge.level1State.prototype = {
         this.timer.stop();
         if(this.playerSquating.count > 0){
 		 	this.youCanDoItText = helper.writeMollyText("Try again tomorrow!", this).bind(this);
-		 	//this.gameMusic.stop();
 		 	  game.time.events.add(Phaser.Timer.SECOND * 3, this.gameOver, this)
 
         }
@@ -288,4 +358,5 @@ game.state.add('menu', CftbChallenge.menuState);
 game.state.add('intro', CftbChallenge.introState);
 game.state.add('level1Training', CftbChallenge.level1TrainingState);
 game.state.add('level1', CftbChallenge.level1State);
+game.state.add('choosePlayer', CftbChallenge.choosePlayerState);
 game.state.start('loader');
