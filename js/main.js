@@ -86,7 +86,32 @@ CftbChallenge.menuState.prototype = {
 		this.load.image('cftbLogo','CFTBPixelLogo.png');
 	},
 
+	tryLift: function() {
+		this.movingLine.stop();
+		if(this.powerLine.y > 140 && this.powerLine.y < 180) {
+			console.log('you win');
+		}
+		else {
+			console.log('you lose');
+		}
+
+	},
+
 	create: function() {
+
+		this.powerRect = this.add.graphics(100, 100);
+	    this.powerRect.lineStyle(5, 0xFFFFFF, 1);
+	    this.powerRect.drawRect(420,150,100,175);
+	    this.input.onDown.addOnce(this.tryLift, this)
+
+	    this.powerLine = this.add.graphics(100,100); 
+	    this.powerLine.lineStyle(2, 0xFFFFFF);
+	    this.powerLine.moveTo(420,175);
+	    this.powerLine.lineTo(520, 175);
+
+		this.movingLine = this.add.tween(this.powerLine).to({y: 250}, 1000).to({y: 80}, 1000).loop().start();
+
+
         var cftbText = this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'CROSSFIT THUNDERBOLT', 64);
         cftbText.anchor.x = 0.5;
 
@@ -109,7 +134,11 @@ CftbChallenge.menuState.prototype = {
 		cftbLogo.scale.setTo(1.5, 1.5);
 
 
-        var bestText = this.add.bitmapText(this.world.centerX, 400, 'fat-and-tiny', 'Best Lift: 0 lbs', 64);
+		if (!localStorage.getItem('bestLift')) {
+		    localStorage.setItem('bestLift', 0);
+		}
+
+        var bestText = this.add.bitmapText(this.world.centerX, 400, 'fat-and-tiny', 'Best Lift: ' + localStorage.getItem('bestLift')  + ' lbs', 64);
         bestText.anchor.x = 0.5;
 
 
@@ -259,6 +288,7 @@ CftbChallenge.level1State = function (game) {
 	this.timerEvent;
 	this.WODTimer;
 	this.gameMusic;
+	this.powerRect;
 	this.playerPic;
 
 };
@@ -294,10 +324,13 @@ CftbChallenge.level1State.prototype = {
 				    //this.sound.stopAll()
 				    //this.gameMusic.play();
 		  			prevResults.destroy();
+
+
+
 					this.playerSquating.events.onInputDown.add(CftbChallenge.level1State.prototype.squat, this);
 					this.playerSquating.count = 30;
 			        this.scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Attempt: 95', 32);
-			        this.bestText = game.add.bitmapText(16, 235, 'fat-and-tiny', 'PR: 95', 32);
+			        this.bestText = game.add.bitmapText(16, 235, 'fat-and-tiny', 'PR: ' + localStorage.getItem('bestLift'), 32);
 			        this.WODTimer = game.add.bitmapText(420, 205, 'fat-and-tiny', 'Lift Timer: 0', 32);
 			        this.scoreText.smoothed = false;
 				 	this.youCanDoItText = helper.writeMollyText("Let me turn up the music! You can do it!", this).bind(this);
@@ -319,6 +352,7 @@ CftbChallenge.level1State.prototype = {
 			this.alreadyRun = true;
 			this.playerSquating.events.onInputDown.removeAll();
 		 	this.youCanDoItText = helper.writeMollyText("You did it!", this).bind(this)
+		 	localStorage.setItem('bestLift', 95);
 		 	this.timer.stop();
 		}
 	},
