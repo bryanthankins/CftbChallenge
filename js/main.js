@@ -13,7 +13,6 @@ CftbChallenge.loaderState.prototype = {
 	preload: function() {
 	  this.load.path = 'assets/';
 	  this.load.bitmapFont('fat-and-tiny');
-      this.load.audio('goingdown', 'going_down_tune.mp3');
       this.load.audio('notmyship', 'not_my_ship.mp3');
 	},
 
@@ -86,30 +85,8 @@ CftbChallenge.menuState.prototype = {
 		this.load.image('cftbLogo','CFTBPixelLogo.png');
 	},
 
-	tryLift: function() {
-		this.movingLine.stop();
-		if(this.powerLine.y > 140 && this.powerLine.y < 180) {
-			console.log('you win');
-		}
-		else {
-			console.log('you lose');
-		}
-
-	},
 
 	create: function() {
-
-		this.powerRect = this.add.graphics(100, 100);
-	    this.powerRect.lineStyle(5, 0xFFFFFF, 1);
-	    this.powerRect.drawRect(420,150,100,175);
-	    this.input.onDown.addOnce(this.tryLift, this)
-
-	    this.powerLine = this.add.graphics(100,100); 
-	    this.powerLine.lineStyle(2, 0xFFFFFF);
-	    this.powerLine.moveTo(420,175);
-	    this.powerLine.lineTo(520, 175);
-
-		this.movingLine = this.add.tween(this.powerLine).to({y: 250}, 1000).to({y: 80}, 1000).loop().start();
 
 
         var cftbText = this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'CROSSFIT THUNDERBOLT', 64);
@@ -144,10 +121,19 @@ CftbChallenge.menuState.prototype = {
 
 		startText.inputEnabled = true;
 		startText.events.onInputDown.add(this.startGame, this);
+		startText.events.onInputOver.add(function(){
+			this.game.canvas.style.cursor = "pointer";
+		}, this);
+		startText.events.onInputOut.add(function(){
+			this.game.canvas.style.cursor = "default";
+		}, this);
+
 		tutText.inputEnabled = true;
 		tutText.events.onInputDown.add(this.startTut, this);
-        this.music = this.add.audio('notmyship');
-        //this.music.play(); TODO: add back
+		if(!this.music || !this.music.isPlaying) {
+	        this.music = this.add.audio('notmyship');
+	        this.music.play(); 
+	    }
 	},
 
     startGame: function () { 
@@ -225,7 +211,7 @@ var helper = {
 		    gameState.mollyText.init(game, {
 			    x: 190,
 			    y: 40,
-			    time: 65,
+			    time: 60,
 			    fontFamily: "fat-and-tiny",
 			    //sound: gameState.talkingAudio,
 			    fontSize: 36,
@@ -297,12 +283,85 @@ CftbChallenge.level1State.prototype = {
 
 	init: function(params) {
 		this.playerPic = params;
+		this.currentWeight = 95;
+		this.powerBarSpeed = 1000;
 	},
 
 	preload: function() {
 		 this.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
 		 this.load.spritesheet('playersquating', 'Squat.png', 164, 164);
 		 this.load.image('playerPic', this.playerPic + '.png');
+
+	},
+
+	tryLift: function() {
+		this.movingLine.stop();
+	 	this.timer.stop();
+		if(this.powerLine.y > 135 && this.powerLine.y < 185) {
+		    this.playerSquating.animations.play('squat');
+		 	this.youCanDoItText = helper.writeMollyText("You did it!", this).bind(this)
+		 		.then(function(){
+		 			if(this.currentWeight > localStorage.getItem('bestLift')) {
+					 	localStorage.setItem('bestLift', this.currentWeight);
+					 }
+				 	this.nextLevel();
+		 		});
+		}
+		else {
+		 	this.youCanDoItText = helper.writeMollyText("Try again tomorrow!", this).bind(this);
+		 	  game.time.events.add(Phaser.Timer.SECOND * 3, this.gameOver, this);
+		}
+
+		console.log(this.powerLine.y);
+
+
+	},
+
+
+	//TODO: have character say random phrase - GetRandomPhrase()
+	drawPowerBar: function() {
+					this.centerRect = this.add.graphics(100, 100);
+				    this.centerRect.lineStyle(0);
+				    this.centerRect.beginFill(0xCD404A, 1);
+				    this.centerRect.drawRect(420,210,100,50);
+				    this.centerRect.endFill();
+
+					this.powerRect = this.add.graphics(100, 100);
+				    this.powerRect.lineStyle(5, 0xFFFFFF, 1);
+				    this.powerRect.drawRect(420,150,100,175);
+				    this.input.onDown.addOnce(this.tryLift, this)
+
+				    this.powerLine = this.add.graphics(100,100); 
+				    this.powerLine.lineStyle(2, 0xFFFFFF);
+				    this.powerLine.moveTo(420,175);
+				    this.powerLine.lineTo(520, 175);
+
+					this.movingLine = this.add.tween(this.powerLine).to({y: 250}, this.powerBarSpeed).to({y: 80}, this.powerBarSpeed).loop().start();
+
+
+
+	},
+
+	nextLevel: function() {
+		this.currentWeight += 20;
+		this.powerBarSpeed -= 200;
+		if (this.powerBarSpeed <=50) {
+			this.powerBarSpeed = 50;
+		}
+	 	helper.writeMollyText("Lets try " + this.currentWeight + " pounds [click to start]", this).bind(this)
+	 	  .then(function(){
+	        this.scoreText.text = 'Attempt: ' + this.currentWeight;
+	        this.bestText.text  = 'PR: ' + localStorage.getItem('bestLift');
+
+	        this.drawPowerBar();
+
+
+	        this.timer.destroy();
+	        this.timer = this.time.create();
+	        this.timerEvent = this.timer.add(Phaser.Timer.SECOND * 15, this.endTimer, this);
+	        this.timer.start();
+	 	  });
+
 
 	},
 
@@ -315,47 +374,32 @@ CftbChallenge.level1State.prototype = {
         this.playerName = game.add.bitmapText(74, 430, 'fat-and-tiny', this.playerPic, 44);
         this.timer = this.time.create();
 
-	 	helper.writeMollyText("Lets start with 95 pounds [click]", this).bind(this)
+	 	helper.writeMollyText("Welcome to CrossFit Thunderbolt! I'm coach Molly [click to continue]",this).bind(this)
+		  .then(function(prevResults){
+				 	return helper.writeMollyText("Do you think you can lift " + this.currentWeight + " pounds?", this).bind(this)
+			  	})
 		  .then(function(prevResults){
 				 	return helper.writeMollyText("I want to see perfect form 3 2 1 GO! [click to start]", this).bind(this)
 			  	})
 		  .then(function(prevResults){
 
-				    //this.sound.stopAll()
-				    //this.gameMusic.play();
 		  			prevResults.destroy();
 
+		  			this.drawPowerBar();
 
 
-					this.playerSquating.events.onInputDown.add(CftbChallenge.level1State.prototype.squat, this);
-					this.playerSquating.count = 30;
-			        this.scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Attempt: 95', 32);
+			        this.scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Attempt: ' + this.currentWeight, 32);
 			        this.bestText = game.add.bitmapText(16, 235, 'fat-and-tiny', 'PR: ' + localStorage.getItem('bestLift'), 32);
 			        this.WODTimer = game.add.bitmapText(420, 205, 'fat-and-tiny', 'Lift Timer: 0', 32);
-			        this.scoreText.smoothed = false;
 				 	this.youCanDoItText = helper.writeMollyText("Let me turn up the music! You can do it!", this).bind(this);
 
-			        this.timerEvent = this.timer.add(Phaser.Timer.SECOND * 30, this.endTimer, this);
+			        this.timerEvent = this.timer.add(Phaser.Timer.SECOND * 15, this.endTimer, this);
 			        this.timer.start();
 			  	});
 
 
 	},
-	squat: function() {
-	    this.playerSquating.animations.play('squat');
-	    this.playerSquating.count--; 
-	    this.scoreText.text = "Player Squats: " + this.playerSquating.count;
-	},
 
-	update: function() {
-		if(this.playerSquating.count <= 0 && !this.alreadyRun){
-			this.alreadyRun = true;
-			this.playerSquating.events.onInputDown.removeAll();
-		 	this.youCanDoItText = helper.writeMollyText("You did it!", this).bind(this)
-		 	localStorage.setItem('bestLift', 95);
-		 	this.timer.stop();
-		}
-	},
     render: function () {
         if (this.timer.running) {
             this.WODTimer.text = "Lift Timer: " + this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000));
