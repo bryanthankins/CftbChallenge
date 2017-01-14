@@ -5,15 +5,15 @@ TODO
 -Figure out sound effect when talking
 -Blow up character & shake screen on failed lift. Tween success!
 -Art for players, Art for lift
--White border around the whole thing when running on mobile
+-Test and optimize for mobile
 */
 
 
 var CftbChallenge = {};
 
-CftbChallenge.loaderState = function (game) {};
+CftbChallenge.bootState = function (game) {};
 
-CftbChallenge.loaderState.prototype = {
+CftbChallenge.bootState.prototype = {
 
 	init: function() {
         this.input.maxPointers = 1;
@@ -22,11 +22,12 @@ CftbChallenge.loaderState.prototype = {
 
 	preload: function() {
 	  this.load.path = 'assets/';
-	  this.load.bitmapFont('fat-and-tiny');
-      this.load.audio('notmyship', 'not_my_ship.mp3');
+
+	  this.load.image('cftbLogo','CFTBPixelLogo.png');
 	},
 
 	create: function() {
+
 		this.stage.backgroundColor = 0x100438;
 
 		if (!game.device.desktop) {
@@ -36,6 +37,31 @@ CftbChallenge.loaderState.prototype = {
 			game.scale.pageAlignVertically = true;
 		    document.body.style.backgroundColor = '#100438';
 		}
+        this.state.start('loader');
+	},
+
+
+};
+
+CftbChallenge.loaderState = function (game) {};
+
+CftbChallenge.loaderState.prototype = {
+
+
+	preload: function() {
+
+		this.cftbLogo = game.add.sprite(300, 220, 'cftbLogo');
+		this.cftbLogo.anchor.setTo(0.5);
+		this.cftbLogo.smoothed = false;
+		this.cftbLogo.scale.setTo(1.5, 1.5);
+		this.load.setPreloadSprite(this.cftbLogo);
+
+		this.load.bitmapFont('fat-and-tiny');
+		this.load.audio('notmyship', 'not_my_ship.mp3');
+	},
+
+	create: function() {
+
         this.state.start('menu');
 	},
 
@@ -436,8 +462,9 @@ CftbChallenge.level1State.prototype = {
 };
 
 var game = new Phaser.Game(640, 480, Phaser.CANVAS, '');
+game.state.add('boot', CftbChallenge.bootState);
 game.state.add('loader', CftbChallenge.loaderState);
 game.state.add('menu', CftbChallenge.menuState);
 game.state.add('level1', CftbChallenge.level1State);
 game.state.add('choosePlayer', CftbChallenge.choosePlayerState);
-game.state.start('loader');
+game.state.start('boot');
