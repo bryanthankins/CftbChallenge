@@ -1,11 +1,8 @@
 /*
 TODO
 ----
--Figure out how to click and show rest of text
--Figure out sound effect when talking
--Blow up character & shake screen on failed lift. Tween success!
--Art for players, Art for lift
--Test and optimize for mobile
+-Art for players - draw still of coaches, Art for lift - snatch
+-Art - Sad face for molly?
 */
 
 
@@ -58,6 +55,10 @@ CftbChallenge.loaderState.prototype = {
 
 		this.load.bitmapFont('fat-and-tiny');
 		this.load.audio('notmyship', 'not_my_ship.mp3');
+		this.load.audio('coin', 'coin.mp3');
+		this.load.audio('dead', 'dead.mp3');
+		this.load.audio('jump', 'jump.mp3');
+		this.load.image('pixel', 'pixel.png');
 	},
 
 	create: function() {
@@ -68,55 +69,6 @@ CftbChallenge.loaderState.prototype = {
 
 };
 
-CftbChallenge.choosePlayerState = function (game) {
-};
-
-CftbChallenge.choosePlayerState.prototype = {
-
-	init: function() {
-	},
-
-	preload: function() {
-		this.load.image('player1','PLAYER1.png');
-		this.load.image('player2','PLAYER2.png');
-		this.load.image('player3','PLAYER3.png');
-	},
-
-	create: function() {
-        var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Player!', 64);
-        chooseText.anchor.x = 0.5;
-
-        var playerFace1 = this.add.sprite(this.world.centerX - 210, this.world.centerY - 20, 'player1');
-        playerFace1.anchor.x = 0.5;
-        playerFace1.inputEnabled = true;
-        playerFace1.events.onInputDown.add(this.pickPlayer1, this);
-        var playerFace2 = this.add.sprite(this.world.centerX, this.world.centerY - 20, 'player2');
-        playerFace2.anchor.x = 0.5;
-        playerFace2.inputEnabled = true;
-        playerFace2.events.onInputDown.add(this.pickPlayer2, this);
-        var playerFace3 = this.add.sprite(this.world.centerX + 190, this.world.centerY - 20, 'player3');
-        playerFace3.anchor.x = 0.5;
-        playerFace3.inputEnabled = true;
-        playerFace3.events.onInputDown.add(this.pickPlayer3, this);
-	},
-	pickPlayer1: function() {
-		this.state.start('level1',true, false, 'PLAYER1');
-
-	},
-	pickPlayer2: function() {
-		this.state.start('level1',true, false, 'PLAYER2');
-
-	},
-	pickPlayer3: function() {
-		this.state.start('level1',true, false, 'PLAYER3');
-
-	},
-
-
-};
-
-
-
 CftbChallenge.menuState = function (game) {
 	this.music;
 };
@@ -125,11 +77,11 @@ CftbChallenge.menuState.prototype = {
 
 
 	preload: function(){
-		this.load.image('cftbLogo','CFTBPixelLogo.png');
 	},
 
 
 	create: function() {
+		this.coinSound = game.add.audio('coin'); 
 
 
         var cftbText = this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'CROSSFIT THUNDERBOLT', 64);
@@ -168,15 +120,67 @@ CftbChallenge.menuState.prototype = {
 	},
 
     startGame: function () { 
+    	this.coinSound.play();
         this.state.start('choosePlayer');
 
     },
-    startTut: function () { 
-        this.state.start('intro');
-
-    }
 
 };
+
+CftbChallenge.choosePlayerState = function (game) {
+};
+
+CftbChallenge.choosePlayerState.prototype = {
+
+	init: function() {
+	},
+
+	preload: function() {
+		this.load.image('player1','PLAYER1.png');
+		this.load.image('player2','PLAYER2.png');
+		this.load.image('player3','PLAYER3.png');
+	},
+
+	create: function() {
+		this.coinSound = game.add.audio('coin'); 
+
+        var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Player!', 64);
+        chooseText.anchor.x = 0.5;
+
+        var playerFace1 = this.add.sprite(this.world.centerX - 210, this.world.centerY - 20, 'player1');
+        playerFace1.anchor.x = 0.5;
+        playerFace1.inputEnabled = true;
+        playerFace1.events.onInputDown.add(this.pickPlayer1, this);
+        var playerFace2 = this.add.sprite(this.world.centerX, this.world.centerY - 20, 'player2');
+        playerFace2.anchor.x = 0.5;
+        playerFace2.inputEnabled = true;
+        playerFace2.events.onInputDown.add(this.pickPlayer2, this);
+        var playerFace3 = this.add.sprite(this.world.centerX + 190, this.world.centerY - 20, 'player3');
+        playerFace3.anchor.x = 0.5;
+        playerFace3.inputEnabled = true;
+        playerFace3.events.onInputDown.add(this.pickPlayer3, this);
+	},
+	pickPlayer1: function() {
+    	this.coinSound.play();
+		this.state.start('level1',true, false, 'PLAYER1');
+
+	},
+	pickPlayer2: function() {
+    	this.coinSound.play();
+		this.state.start('level1',true, false, 'PLAYER2');
+
+	},
+	pickPlayer3: function() {
+    	this.coinSound.play();
+		this.state.start('level1',true, false, 'PLAYER3');
+
+	},
+
+
+};
+
+
+
 
 var helper = {
 	getDuringLiftPhrase() {
@@ -295,6 +299,20 @@ var helper = {
 			    text: textToWrite 
 			  });
 			  gameState.mollyText.start();
+
+			  /* -- click to continue text
+			  gameState.input.onDown.addOnce(endText, this);
+			  function endText() {
+			        gameState.mollySprite.animations.stop();
+			        gameState.mollySprite.animations.frame = game.rnd.integerInRange(0, 6);
+			        gameState.mollyText.destroy();
+			        gameState.mollyText = gameState.add.bitmapText(190, 40, 'fat-and-tiny', textToWrite, 36);
+					gameState.input.onDown.addOnce(clicked, this);
+					function clicked() {
+					    fulfill(gameState.mollyText);
+					}
+			  }
+			  */
 		});
 	},
 
@@ -325,9 +343,14 @@ CftbChallenge.level1State.prototype = {
 	},
 
 	tryLift: function() {
+		this.jumpSound.play();
 		this.movingLine.stop();
 	 	this.timer.stop();
 		if(this.powerLine.y > 135 && this.powerLine.y < 185) {
+			this.camera.flash(0xffffff, 300);
+			this.cftbLogo.alpha = 1;
+	    	this.add.tween(this.cftbLogo.scale).to({x: 8.3, y: 8.3}, 500).start();
+	    	this.add.tween(this.cftbLogo).to( { alpha: 0 }, 1000).start();// Phaser.Easing.Linear.None, true, 0, 1000, true);
 		    this.playerSquating.animations.play('squat');
 		 	this.youCanDoItText = helper.writeMollyText(helper.getPostivePhrase(), this).bind(this)
 		 		.then(function(){
@@ -338,8 +361,20 @@ CftbChallenge.level1State.prototype = {
 		 		});
 		}
 		else {
-		 	this.youCanDoItText = helper.writeMollyText(helper.getFailureLiftPhrase(), this).bind(this);
-		 	  game.time.events.add(Phaser.Timer.SECOND * 3, this.gameOver, this);
+
+			this.emitter.x = this.playerSquating.x;
+			this.emitter.y = this.playerSquating.y;
+			this.emitter.start(true, 800, null, 15);
+
+
+			this.deadSound.play();
+			this.playerSquating.destroy();
+			this.camera.shake(0.02, 300);
+		 	this.youCanDoItText = helper.writeMollyText(helper.getFailureLiftPhrase(), this).bind(this)
+		 		.then(function(){
+		 			this.gameOver();
+
+		 		});
 		}
 
 	},
@@ -367,8 +402,9 @@ CftbChallenge.level1State.prototype = {
 	},
 
 	nextLevel: function() {
+		this.cftbLogo.scale.setTo(0.3, 0.3);
 		this.currentWeight += 20;
-		if (this.powerBarSpeed <= 0) {
+		if (this.powerBarSpeed <= 200) {
 		 	helper.writeMollyText("You won the Thunderbolt Challenge!!!", this).bind(this)
 		 	  .then(function(){
 			 	  this.gameOver();
@@ -376,7 +412,7 @@ CftbChallenge.level1State.prototype = {
 		}
 		else {
 			if (this.powerBarSpeed <=600) {
-				this.powerBarSpeed -= 100;
+				this.powerBarSpeed -= 50;
 			}
 			else {
 				this.powerBarSpeed -= 200;
@@ -402,18 +438,37 @@ CftbChallenge.level1State.prototype = {
 	},
 
 	create: function() {
+
+		this.emitter = game.add.emitter(0, 0, 35);
+		this.emitter.makeParticles('pixel');
+		this.emitter.setXSpeed(-250, 250);
+		this.emitter.setYSpeed(-250, 250);
+		this.emitter.gravity = 0;
+
+
+		this.cftbLogo = game.add.sprite(300, 220, 'cftbLogo');
+		this.cftbLogo.anchor.setTo(0.5);
+		this.cftbLogo.smoothed = false;
+		this.cftbLogo.scale.setTo(0.3, 0.3);
+		this.cftbLogo.alpha = 0;
+
+		this.jumpSound = game.add.audio('jump'); 
+		this.coinSound = game.add.audio('coin'); 
+		this.deadSound = game.add.audio('dead');
+		
 		var graphics = helper.drawRectangle();
 		this.mollySprite = helper.createMollySprite();
 		this.playerSquating = helper.createPlayerSquatSprite(304,340);
 
 		this.playerSprite = this.add.image(4, 410, 'playerPic');
 		this.playerSprite.scale.setTo(0.5,0.5);
+    	this.add.tween(this.playerSquating.scale).to({x: 1.3, y: 1.3}, 500).yoyo(true).start();
         this.playerName = game.add.bitmapText(74, 430, 'fat-and-tiny', this.playerPic, 44);
         this.timer = this.time.create();
 
 	 	helper.writeMollyText("Welcome to CrossFit Thunderbolt! I'm coach Molly!",this).bind(this)
 		  .then(function(prevResults){
-				 	return helper.writeMollyText("The Thunderbolt Challenge will start with " + this.currentWeight + " pounds and go up!", this).bind(this)
+				 	return helper.writeMollyText("The Thunderbolt Challenge will start with a " + this.currentWeight + " pound snatch and go up!", this).bind(this)
 			  	})
 		  .then(function(prevResults){
 				 	return helper.writeMollyText("There will be a power bar on the right - click when it is red! Got it?", this).bind(this)
