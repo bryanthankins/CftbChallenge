@@ -2,7 +2,6 @@
 TODO
 ----
 -Art for players - draw still of coaches, Art for lift - snatch
--Art - Sad face for molly?
 */
 
 
@@ -144,7 +143,7 @@ CftbChallenge.choosePlayerState.prototype = {
 	create: function() {
 		this.coinSound = game.add.audio('coin'); 
 
-        var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Player!', 64);
+        var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Coach!', 64);
         chooseText.anchor.x = 0.5;
 
         var playerFace1 = this.add.sprite(this.world.centerX - 210, this.world.centerY - 20, 'player1');
@@ -206,7 +205,7 @@ var helper = {
 	    "That lift made me sad",
 	    "Did you drink too much last night?",
 	    "At least you tried!",
-	    "You were so close!"
+	    "I really thought you could do it"
 		];
 
 		var randomNum = game.rnd.integerInRange(0,6);
@@ -272,7 +271,7 @@ var helper = {
 	    return squatSprite;
 	},
 
-	writeMollyText: function(textToWrite, gameState) {
+	writeMollyText: function(textToWrite, gameState, failure) {
 		return new Promise(function(fulfill, reject) {
 			if(gameState.mollyText) {
 				gameState.mollyText.destroy();
@@ -290,7 +289,12 @@ var helper = {
 			    maxWidth: 400,
 			    endFn: function() {
 			        gameState.mollySprite.animations.stop();
-			        gameState.mollySprite.animations.frame = game.rnd.integerInRange(0, 6);
+			        if(failure){
+				        gameState.mollySprite.animations.frame = 7;
+			        }
+			        else {
+				        gameState.mollySprite.animations.frame = game.rnd.integerInRange(0, 6);
+			        }
 					gameState.input.onDown.addOnce(clicked, this);
 					function clicked() {
 					    fulfill(gameState.mollyText);
@@ -336,7 +340,7 @@ CftbChallenge.level1State.prototype = {
 	},
 
 	preload: function() {
-		 this.load.spritesheet('mollytalking', 'MollyFace2.png', 128, 128);
+		 this.load.spritesheet('mollytalking', 'MollyFace3.png', 128, 128);
 		 this.load.spritesheet('playersquating', 'Squat.png', 164, 164);
 		 this.load.image('playerPic', this.playerPic + '.png');
 
@@ -361,7 +365,12 @@ CftbChallenge.level1State.prototype = {
 		 		});
 		}
 		else {
+			this.failedLift();
+		}
 
+	},
+
+	failedLift: function() {
 			this.emitter.x = this.playerSquating.x;
 			this.emitter.y = this.playerSquating.y;
 			this.emitter.start(true, 800, null, 15);
@@ -370,12 +379,15 @@ CftbChallenge.level1State.prototype = {
 			this.deadSound.play();
 			this.playerSquating.destroy();
 			this.camera.shake(0.02, 300);
-		 	this.youCanDoItText = helper.writeMollyText(helper.getFailureLiftPhrase(), this).bind(this)
+	        var failText = this.add.bitmapText(this.world.centerX, this.world.centerY + 20, 'fat-and-tiny', 'GAME OVER', 64);
+	        failText.anchor.x = 0.5;
+	    	this.add.tween(failText).to({y: 310},1000).easing(Phaser.Easing.Bounce.Out).start();
+			this.add.tween(failText).to({angle: -2}, 500).to({angle: 2}, 1000).to({angle: 0}, 500).loop().start();
+		 	this.youCanDoItText = helper.writeMollyText(helper.getFailureLiftPhrase(), this, true).bind(this)
 		 		.then(function(){
 		 			this.gameOver();
 
 		 		});
-		}
 
 	},
 
@@ -390,7 +402,6 @@ CftbChallenge.level1State.prototype = {
 		this.powerRect = this.add.graphics(100, 100);
 	    this.powerRect.lineStyle(5, 0xFFFFFF, 1);
 	    this.powerRect.drawRect(420,150,100,175);
-	    this.input.onDown.addOnce(this.tryLift, this)
 
 	    this.powerLine = this.add.graphics(100,100); 
 	    this.powerLine.lineStyle(2, 0xFFFFFF);
@@ -398,6 +409,7 @@ CftbChallenge.level1State.prototype = {
 	    this.powerLine.lineTo(520, 175);
 
 		this.movingLine = this.add.tween(this.powerLine).to({y: 250}, this.powerBarSpeed).to({y: 80}, this.powerBarSpeed).loop().start();
+
 
 	},
 
@@ -423,6 +435,7 @@ CftbChallenge.level1State.prototype = {
 		        this.bestText.text  = 'PR: ' + localStorage.getItem('bestLift');
 
 		        this.drawPowerBar();
+				    this.input.onDown.addOnce(this.tryLift, this);
 
 	        	this.youCanDoItText = helper.writeMollyText(helper.getDuringLiftPhrase(), this).bind(this);
 
@@ -471,7 +484,8 @@ CftbChallenge.level1State.prototype = {
 				 	return helper.writeMollyText("The Thunderbolt Challenge will start with a " + this.currentWeight + " pound snatch and go up!", this).bind(this)
 			  	})
 		  .then(function(prevResults){
-				 	return helper.writeMollyText("There will be a power bar on the right - click when it is red! Got it?", this).bind(this)
+		  			this.drawPowerBar();
+				 	return helper.writeMollyText("To do the lift click when the power bar is in the red! Got it?", this).bind(this)
 			  	})
 		  .then(function(prevResults){
 				 	return helper.writeMollyText("Great! You will have 15 seconds! I want to see perfect form - 3 2 1 GO!", this).bind(this)
@@ -479,7 +493,7 @@ CftbChallenge.level1State.prototype = {
 		  .then(function(prevResults){
 
 		  			prevResults.destroy();
-		  			this.drawPowerBar();
+				    this.input.onDown.addOnce(this.tryLift, this);
 
 			        this.scoreText = game.add.bitmapText(16, 205, 'fat-and-tiny', 'Attempt: ' + this.currentWeight, 32);
 			        this.bestText = game.add.bitmapText(16, 235, 'fat-and-tiny', 'PR: ' + localStorage.getItem('bestLift'), 32);
@@ -502,12 +516,10 @@ CftbChallenge.level1State.prototype = {
         }
     },
     endTimer: function() {
+		this.movingLine.stop();
         this.timer.stop();
-        if(this.playerSquating.count > 0){
-		 	this.youCanDoItText = helper.writeMollyText(helper.getFailureLiftPhrase(), this).bind(this);
-		 	  game.time.events.add(Phaser.Timer.SECOND * 3, this.gameOver, this)
+        this.failedLift();
 
-        }
     },
     gameOver: function() {
         this.state.start('menu');
