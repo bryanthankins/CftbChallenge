@@ -55,6 +55,9 @@ CftbChallenge.loaderState.prototype = {
 		this.load.setPreloadSprite(this.cftbLogo);
 
 		this.load.bitmapFont('fat-and-tiny');
+		this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'Loading Game', 64);
+
+
 		this.load.audio('notmyship', 'not_my_ship.mp3');
 		this.load.audio('coin', 'coin.mp3');
 		this.load.audio('dead', 'dead.mp3');
