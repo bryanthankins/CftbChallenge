@@ -1,10 +1,9 @@
 /*
 TODO
 ----
--Art for players - draw still of coaches, 
 -Art for lift - snatch
--allow skipping tutorial (after the choose coach screen)
 -Allow speeding up text
+-Image steps. Draw as 32x32. Enlarge to 128x128
 */
 
 
@@ -89,7 +88,7 @@ CftbChallenge.menuState.prototype = {
         var cftbText = this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'CROSSFIT THUNDERBOLT', 64);
         cftbText.anchor.x = 0.5;
 
-        var challengeText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Challenge!', 64);
+        var challengeText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Snatch Challenge!', 64);
         challengeText.anchor.x = 0.5;
 
         var startText = this.add.bitmapText(this.world.centerX, 230, 'fat-and-tiny', 'Play', 64);
@@ -139,21 +138,21 @@ CftbChallenge.choosePlayerState.prototype = {
 
 	preload: function() {
 		this.load.image('player1','PLAYER1.png');
-		this.load.image('player2','PLAYER2.png');
+		this.load.image('will','will.png');
 		this.load.image('player3','PLAYER3.png');
 	},
 
 	create: function() {
 		this.coinSound = game.add.audio('coin'); 
 
-        var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Coach!', 64);
+        var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Player!', 64);
         chooseText.anchor.x = 0.5;
 
         var playerFace1 = this.add.sprite(this.world.centerX - 210, this.world.centerY - 20, 'player1');
         playerFace1.anchor.x = 0.5;
         playerFace1.inputEnabled = true;
         playerFace1.events.onInputDown.add(this.pickPlayer1, this);
-        var playerFace2 = this.add.sprite(this.world.centerX, this.world.centerY - 20, 'player2');
+        var playerFace2 = this.add.sprite(this.world.centerX, this.world.centerY - 20, 'will');
         playerFace2.anchor.x = 0.5;
         playerFace2.inputEnabled = true;
         playerFace2.events.onInputDown.add(this.pickPlayer2, this);
@@ -169,7 +168,7 @@ CftbChallenge.choosePlayerState.prototype = {
 	},
 	pickPlayer2: function() {
     	this.coinSound.play();
-		this.state.start('chooseTutorial',true, false, 'PLAYER2');
+		this.state.start('chooseTutorial',true, false, 'WILL');
 
 	},
 	pickPlayer3: function() {
@@ -202,7 +201,7 @@ CftbChallenge.chooseTutorial.prototype = {
         startTut.inputEnabled = true;
         startTut.events.onInputDown.add(this.startTut, this);
 
-        var startGame = this.add.bitmapText(this.world.centerX, 105, 'fat-and-tiny', 'Start Game', 64);
+        var startGame = this.add.bitmapText(this.world.centerX, 155, 'fat-and-tiny', 'Start Game', 64);
         startGame.anchor.x = 0.5;
         startGame.inputEnabled = true;
         startGame.events.onInputDown.add(this.startGame, this);
@@ -258,7 +257,7 @@ var helper = {
 	    "Have you been eating poorly?",
 	    "That lift made me sad",
 	    "Did you drink too much last night?",
-	    "At least you tried!",
+	    "I thought your snatch was better!",
 	    "I really thought you could do it"
 		];
 
@@ -316,12 +315,13 @@ var helper = {
 	    return mollySprite;
 	},
 
+
 	createPlayerSquatSprite: function(x, y) {
 		var squatSprite = game.add.sprite(x, y, 'playersquating');
 		squatSprite.anchor.setTo(0.5);
-	    squatSprite.animations.add('squat',[0,1], 5, false);
-        squatSprite.animations.frame = 1;
+	    squatSprite.animations.add('squat',[0,1,2,3,4], 9, false);
         squatSprite.inputEnabled = true;
+		squatSprite.scale.setTo(1.3, 1.3);
 	    return squatSprite;
 	},
 
@@ -396,7 +396,7 @@ CftbChallenge.level1State.prototype = {
 
 	preload: function() {
 		 this.load.spritesheet('mollytalking', 'MollyFace3.png', 128, 128);
-		 this.load.spritesheet('playersquating', 'Squat.png', 164, 164);
+		 this.load.spritesheet('playersquating', 'Squat2.png', 164, 164);
 		 this.load.image('playerPic', this.playerPic + '.png');
 
 	},
@@ -469,6 +469,7 @@ CftbChallenge.level1State.prototype = {
 	},
 
 	nextLevel: function() {
+        this.playerSquating.animations.frame = 0;
 		this.cftbLogo.scale.setTo(0.3, 0.3);
 		this.currentWeight += 20;
 		if (this.powerBarSpeed <= 200) {
@@ -538,7 +539,7 @@ CftbChallenge.level1State.prototype = {
 
 		 	helper.writeMollyText("Welcome to CrossFit Thunderbolt! I'm coach Molly!",this).bind(this)
 			  .then(function(prevResults){
-					 	return helper.writeMollyText("The Thunderbolt Challenge will start with a " + this.currentWeight + " pound snatch and go up!", this).bind(this)
+					 	return helper.writeMollyText("The Thunderbolt Snatch Challenge will start with a " + this.currentWeight + " pound snatch and go up!", this).bind(this)
 				  	})
 			  .then(function(prevResults){
 			  			this.drawPowerBar();
