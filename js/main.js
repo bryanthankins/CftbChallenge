@@ -1,9 +1,9 @@
 /*
 TODO
 ----
--Art for lift - snatch
--Allow speeding up text
--Image steps. Draw as 32x32. Enlarge to 128x128
+
+-Draw other characters
+-Draw bar falling on head
 */
 
 
@@ -138,7 +138,7 @@ CftbChallenge.choosePlayerState.prototype = {
 
 	preload: function() {
 		this.load.image('player1','PLAYER1.png');
-		this.load.image('will','will.png');
+		this.load.image('will','WILL.png');
 		this.load.image('player3','PLAYER3.png');
 	},
 
