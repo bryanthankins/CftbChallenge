@@ -21,7 +21,7 @@ CftbChallenge.bootState.prototype = {
 	preload: function() {
 	  this.load.path = 'assets/';
 
-	  this.load.image('cftbLogo','CFTBPixelLogo.png');
+	  this.load.image('cftbLogoLoading','CFTBPixelLogoLoading.png');
 	},
 
 	create: function() {
@@ -48,15 +48,13 @@ CftbChallenge.loaderState.prototype = {
 
 	preload: function() {
 
-		this.cftbLogo = game.add.sprite(300, 220, 'cftbLogo');
+		this.cftbLogo = game.add.sprite(300, 220, 'cftbLogoLoading');
 		this.cftbLogo.anchor.setTo(0.5);
 		this.cftbLogo.smoothed = false;
 		this.cftbLogo.scale.setTo(1.5, 1.5);
 		this.load.setPreloadSprite(this.cftbLogo);
 
 		this.load.bitmapFont('fat-and-tiny');
-		this.add.bitmapText(this.world.centerX, 20, 'fat-and-tiny', 'Loading Game', 64);
-
 
 		this.load.audio('notmyship', 'not_my_ship.mp3');
 		this.load.audio('coin', 'coin.mp3');
@@ -81,6 +79,7 @@ CftbChallenge.menuState.prototype = {
 
 
 	preload: function(){
+	  this.load.image('cftbLogo','CFTBPixelLogo.png');
 	},
 
 
@@ -140,7 +139,7 @@ CftbChallenge.choosePlayerState.prototype = {
 	},
 
 	preload: function() {
-		this.load.image('player1','PLAYER1.png');
+		this.load.image('louie','LOUIE.png');
 		this.load.image('will','WILL.png');
 		this.load.image('player3','PLAYER3.png');
 	},
@@ -151,7 +150,7 @@ CftbChallenge.choosePlayerState.prototype = {
         var chooseText = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Choose a Player!', 64);
         chooseText.anchor.x = 0.5;
 
-        var playerFace1 = this.add.sprite(this.world.centerX - 210, this.world.centerY - 20, 'player1');
+        var playerFace1 = this.add.sprite(this.world.centerX - 210, this.world.centerY - 20, 'louie');
         playerFace1.anchor.x = 0.5;
         playerFace1.inputEnabled = true;
         playerFace1.events.onInputDown.add(this.pickPlayer1, this);
@@ -166,7 +165,7 @@ CftbChallenge.choosePlayerState.prototype = {
 	},
 	pickPlayer1: function() {
     	this.coinSound.play();
-		this.state.start('chooseTutorial',true, false, 'PLAYER1');
+		this.state.start('chooseTutorial',true, false, 'LOUIE');
 
 	},
 	pickPlayer2: function() {
@@ -216,6 +215,7 @@ CftbChallenge.chooseTutorial.prototype = {
 			playerPic: this.playerPic,
 			skipTut: true
 		};
+    	this.coinSound.play();
 
 		this.state.start('level1',true, false, finalParams);
 
@@ -226,6 +226,7 @@ CftbChallenge.chooseTutorial.prototype = {
 			playerPic: this.playerPic,
 			skipTut: false
 		};
+    	this.coinSound.play();
 
 		this.state.start('level1',true, false, finalParams);
 
@@ -323,6 +324,7 @@ var helper = {
 		var squatSprite = game.add.sprite(x, y, 'playersquating');
 		squatSprite.anchor.setTo(0.5);
 	    squatSprite.animations.add('squat',[0,1,2,3,4], 9, false);
+	    squatSprite.animations.add('fail',[0,1,2,3,4,5,6,7,8], 9, false);
         squatSprite.inputEnabled = true;
 		squatSprite.scale.setTo(1.3, 1.3);
 	    return squatSprite;
@@ -428,8 +430,8 @@ CftbChallenge.level1State.prototype = {
 
 	},
 
-	failedLift: function() {
-			this.emitter.x = this.playerSquating.x;
+	failedBlowup: function() {
+		this.emitter.x = this.playerSquating.x;
 			this.emitter.y = this.playerSquating.y;
 			this.emitter.start(true, 800, null, 15);
 
@@ -447,6 +449,11 @@ CftbChallenge.level1State.prototype = {
 
 		 		});
 
+	},
+	failedLift: function() {
+		    this.playerSquating.animations.play('fail');
+		    this.time.events.add(Phaser.Timer.SECOND * 1, this.failedBlowup, this);
+			
 	},
 
 
