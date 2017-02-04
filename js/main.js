@@ -193,19 +193,39 @@ CftbChallenge.chooseTutorial.prototype = {
 		this.powerBarSpeed = 1000;
 		this.alreadyRun = false;
 		this.alreadySaidMessage = false;
+
+
 	},
 
 	create: function() {
 		this.coinSound = game.add.audio('coin'); 
 
+
+		var tutRect = game.add.graphics(10, 10);
+	    tutRect.lineStyle(6, 0xffffff, 1);
+	    tutRect.beginFill(0x100438);
+	    tutRect.drawRect(110, 40, 425, 66);
+	    tutRect.inputEnabled = true;
+        tutRect.events.onInputDown.add(this.startTut, this);
+
         var startTut = this.add.bitmapText(this.world.centerX, 75, 'fat-and-tiny', 'Start Tutorial', 64);
-        startTut.anchor.x = 0.5;
+        startTut.anchor.set(0.5);
         startTut.inputEnabled = true;
+        startTut.hitArea = new Phaser.Rectangle(110, 40, 425, 66);
         startTut.events.onInputDown.add(this.startTut, this);
 
+
+		var gameRect = game.add.graphics(10, 10);
+	    gameRect.lineStyle(6, 0xffffff, 1);
+	    gameRect.beginFill(0x100438);
+	    gameRect.drawRect(110, 125, 425, 66);
+	    gameRect.inputEnabled = true;
+        gameRect.events.onInputDown.add(this.startTut, this);
+
         var startGame = this.add.bitmapText(this.world.centerX, 155, 'fat-and-tiny', 'Start Game', 64);
-        startGame.anchor.x = 0.5;
+        startGame.anchor.set(0.5);
         startGame.inputEnabled = true;
+        startGame.hitArea = new Phaser.Rectangle(0,0,312,66);
         startGame.events.onInputDown.add(this.startGame, this);
 
 	},
@@ -606,7 +626,7 @@ CftbChallenge.level1State.prototype = {
 
 };
 
-var game = new Phaser.Game(640, 480, Phaser.CANVAS, '');
+var game = new Phaser.Game(640, 480, Phaser.AUTO, '');
 game.state.add('boot', CftbChallenge.bootState);
 game.state.add('loader', CftbChallenge.loaderState);
 game.state.add('menu', CftbChallenge.menuState);
