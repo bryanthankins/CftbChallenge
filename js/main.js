@@ -220,7 +220,7 @@ CftbChallenge.chooseTutorial.prototype = {
 	    gameRect.beginFill(0x100438);
 	    gameRect.drawRect(110, 125, 425, 66);
 	    gameRect.inputEnabled = true;
-        gameRect.events.onInputDown.add(this.startTut, this);
+        gameRect.events.onInputDown.add(this.startGame, this);
 
         var startGame = this.add.bitmapText(this.world.centerX, 155, 'fat-and-tiny', 'Start Game', 64);
         startGame.anchor.set(0.5);
