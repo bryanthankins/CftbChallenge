@@ -141,7 +141,7 @@ CftbChallenge.choosePlayerState.prototype = {
 	preload: function() {
 		this.load.image('louie','LOUIE.png');
 		this.load.image('will','WILL.png');
-		this.load.image('player3','PLAYER3.png');
+		this.load.image('kevin','KEVIN.png');
 	},
 
 	create: function() {
@@ -158,7 +158,7 @@ CftbChallenge.choosePlayerState.prototype = {
         playerFace2.anchor.x = 0.5;
         playerFace2.inputEnabled = true;
         playerFace2.events.onInputDown.add(this.pickPlayer2, this);
-        var playerFace3 = this.add.sprite(this.world.centerX + 190, this.world.centerY - 20, 'player3');
+        var playerFace3 = this.add.sprite(this.world.centerX + 190, this.world.centerY - 20, 'kevin');
         playerFace3.anchor.x = 0.5;
         playerFace3.inputEnabled = true;
         playerFace3.events.onInputDown.add(this.pickPlayer3, this);
@@ -175,7 +175,7 @@ CftbChallenge.choosePlayerState.prototype = {
 	},
 	pickPlayer3: function() {
     	this.coinSound.play();
-		this.state.start('chooseTutorial',true, false, 'PLAYER3');
+		this.state.start('chooseTutorial',true, false, 'KEVIN');
 
 	},
 
